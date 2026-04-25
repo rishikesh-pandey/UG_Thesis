@@ -1,0 +1,12 @@
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Time Series and MFCC Parameters}}{17}{table.3.1}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces 1D-CNN Architecture Details}}{18}{table.3.2}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}{\ignorespaces Last Epoch Validation Performance (During Training)}}{24}{table.4.1}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Testing Performance (Unseen Data) -- Confusion Matrix (Quantized Int8)}}{25}{table.4.2}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Neural Network Float32 vs. Int8 Performance on Target Hardware (Using EON\texttrademark {})}}{27}{table.4.3}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces Hardware Footprint (EON Compiler - RAM Optimized)}}{28}{table.4.4}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }

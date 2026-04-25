@@ -1,0 +1,108 @@
+%%%%%% SASV macros%%%%
+
+\usepackage{amsmath,amssymb,amsfonts,bbm,multirow}
+\usepackage{placeins}
+\usepackage{graphicx}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[colorlinks=true,
+            linkcolor=black,
+            urlcolor=blue,
+            citecolor=blue]{hyperref}
+
+\makeatletter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Page Layout Settings %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Margins
+% Top margin
+\setlength\topmargin{69\p@}         % head margin
+\addtolength\topmargin{-1in}        % subtract out the 1 inch driver margin
+
+% Header
+\settoheight\headheight{\small\hbox to \z@{\hss
+  ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\hss}}%
+                                    % height of running head
+
+\setlength\topskip{11\p@}           % height of first line of text
+\setlength\headsep{46\p@}           % space below running head --
+\addtolength\headsep{-\topskip}     %   base to base with first line of text
+
+% Text area
+\setlength\textwidth{156mm}          % text measure excluding margins
+
+\setlength{\textheight}{215mm}    % 39 lines of text
+\addtolength\textheight{\topskip}   %   - including the first line
+
+% Footer
+\setlength\footskip{40\p@}          % space above footer line
+\setlength\maxdepth{.5\topskip}     % pages can be short or deep by half a line?
+
+% Marginal paragraphs
+%\setlength\marginparsep{8\p@}
+%\setlength\marginparpush{6\p@}
+%\setlength\marginparwidth{3.75pc}
+
+% Double-column settings
+%\setlength\columnsep{1pc}           % space between columns for
+                                    %   double-column text
+%\setlength\columnseprule{0\p@}      % width of rule between two columns
+
+% Inside margins
+\setlength{\oddsidemargin}{6pc}   % set inside margin for odd pages
+\addtolength\oddsidemargin{-1in}    % subtract out the 1 inch driver margin
+%\setlength\@tempdima{\paperwidth}   % calculate outside margin for even
+%\addtolength\@tempdima{-\textwidth} %  pages
+%\addtolength\@tempdima{-4.5pc}      %      = trim width - (textwidth
+\setlength\evensidemargin{6pc} %      + inside margin)
+\addtolength\evensidemargin{-1in}   % subtract out the 1 inch driver margin
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%      \rule{\textwidth}{0.5pt}
+  \def\ps@headings{%
+      \let\@oddfoot\@empty\let\@evenfoot\@empty
+%      \def\@evenhead{\bfseries\thepage \hfil\leftmark}%
+%      \def\@evenhead{\bfseries\rightmark\hfil\thepage}%
+%      \def\@oddhead{\bfseries\rightmark\hfil\thepage}%
+      \def\@evenhead{
+      \hbox to \textwidth{\bfseries\rightmark\hfil\thepage}
+      \hspace*{-1.005\textwidth}{\raisebox{-6pt}{\rule{\textwidth}{0.5pt}}}
+      }%
+      \def\@oddhead{
+      \hbox to \textwidth{\bfseries\rightmark\hfil\thepage}
+      \hspace*{-1.005\textwidth}{\raisebox{-6pt}{\rule{\textwidth}{0.5pt}}}
+      }%
+      \let\@mkboth\markboth
+    \def\chaptermark##1{%
+      \markboth {{%
+        \ifnum \c@secnumdepth >\m@ne
+          \if@mainmatter
+            \@chapapp\ \thechapter. \ %
+          \fi
+        \fi
+        ##1}}{}}%
+    \def\sectionmark##1{%
+      \markright {{%
+        \ifnum \c@secnumdepth >\z@
+          \thesection. \ %
+        \fi
+        ##1}}}}
+
+\def\btitle{\normalfont\Large\bfseries\thispagestyle{empty}}
+
+\def\@makeschapterhead#1{%
+  \vspace*{-37\p@}%
+  {\parindent \z@ \centering%\raggedright
+    \normalfont
+    \interlinepenalty\@M
+    \Huge \bfseries  #1\par\nobreak
+    \vskip 127\p@
+  }}
+
+\widowpenalty=10000 \clubpenalty=10000 \hyphenpenalty=1000 \tolerance=1000
+\lefthyphenmin=3 \righthyphenmin=3
+\frenchspacing
+
+\makeatother
+
+\pagestyle{headings}
+
+
+%%%%
