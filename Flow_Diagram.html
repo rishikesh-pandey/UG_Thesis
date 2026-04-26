@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TinyMLOps System Architecture</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #0f172a;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+        .header p {
+            color: #475569;
+            max-width: 900px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+        .diagram-wrapper {
+            width: 100%;
+            max-width: 1400px;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            overflow-x: auto;
+        }
+        .legend-card {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f1f5f9;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            color: #334155;
+            text-align: center;
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>TinyMLOps Pipeline Architecture</h1>
+        <p>Design and Implementation of a Scalable TinyML Deployment Framework for Real-Time Keyword Spotting.<br>
+        <span style="color: #64748b; font-size: 0.95rem;">Includes active implementation and enterprise scalability features (dotted paths).</span></p>
+    </div>
+
+    <div class="diagram-wrapper">
+        <div class="mermaid">
+        flowchart TD
+            %% Styling Classes
+            classDef laptop fill:#f3f4f6,stroke:#4b5563,stroke-width:2px,color:#1f2937
+            classDef script fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a8a
+            classDef aws fill:#ffedd5,stroke:#ea580c,stroke-width:2px,color:#9a3412
+            classDef github fill:#f3e8ff,stroke:#9333ea,stroke-width:2px,color:#581c87
+            classDef actions fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#075985
+            classDef edgeimpulse fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d
+            classDef decision fill:#fef08a,stroke:#ca8a04,stroke-width:2px,color:#854d0e
+            classDef pico fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d
+            
+            %% Future / Unimplemented / Ideal Classes
+            classDef future fill:#f8fafc,stroke:#94a3b8,stroke-width:2px,stroke-dasharray: 5 5,color:#64748b
+            classDef futuredecision fill:#f8fafc,stroke:#cbd5e1,stroke-width:2px,stroke-dasharray: 5 5,color:#64748b
+
+            %% PHASE 1
+            subgraph Phase1 ["Phase 1: Local Data Engineering"]
+                direction TB
+                Raw["Raw Audio Recordings<br/>(e.g. 10-min background noise)"]:::laptop --> Chopper["chopper.py Preprocessor<br/>Forces 16kHz Mono & exact 1s chunks"]:::script
+                Chopper --> Folders["Clean Categorized Folders<br/>yes, no, noise, silence"]:::laptop
+            end
+
+            %% PHASE 2
+            subgraph Phase2 ["Phase 2: Version Control & Pointer Generation (Sequential)"]
+                direction TB
+                Folders -->|"Step 1. Hash files"| DVCAdd["dvc add"]:::laptop
+                DVCAdd -->|"Generates map"| DVCFile["raw_data.dvc<br/>Tiny pointer file"]:::laptop
+                
+                DVCFile -->|"Step 2. Read map & upload"| DVCPush["dvc push"]:::laptop
+                DVCPush --> S3[("AWS S3 Bucket<br/>Heavy .wav Files")]:::aws
+                
+                Code["C++ Code & Configs"]:::laptop --> GitPush["git push"]:::laptop
+                DVCFile -->|"Step 3. Commit map"| GitPush
+                
+                GitPush --> Repo["GitHub Repository<br/>Stores code & pointers (NOT audio)"]:::github
+                S3 -.->|"Git repo stays light because<br/>heavy data lives in AWS"| Repo
+            end
+
+            %% PHASE 3
+            subgraph Phase3 ["Phase 3: CI/CD Pipeline & MLOps Engine"]
+                direction TB
+                Repo -->|"Tripwire: New code/pointer"| Runner["GitHub Actions Runner<br/>Wakes up empty"]:::actions
+                Runner --> Setup["Docker Cache Setup<br/>Installs dependencies fast"]:::actions
+                Setup --> DVCPull["DVC Pull<br/>Reads pointer map from Repo"]:::actions
+                
+                S3 -.->|"Downloads delta dataset"| DVCPull
+                
+                DVCPull --> APIPush["Push data to Edge Impulse API"]:::edgeimpulse
+                APIPush --> EIVersion["Edge Impulse Model Versioning<br/>Tracks changes automatically"]:::edgeimpulse
+                EIVersion --> Augment["Data Augmentation<br/>Adds synthetic noise & shifts"]:::edgeimpulse
+                Augment --> Train["Train Neural Network<br/>Uses Dropout to prevent memorization"]:::edgeimpulse
+                Train --> Quant["Int8 Quantization<br/>Compresses 32-bit floats to 8-bit ints"]:::edgeimpulse
+                
+                Quant --> Test["test_model.py<br/>Tests tiny model on unseen audio"]:::actions
+                Test --> Gate{"Is Accuracy<br/>greater than 80%?"}:::decision
+                
+                Gate -->|NO| Fail["Violently Halt Pipeline<br/>Protect hardware from bad model"]:::actions
+                Gate -->|YES| Compile["CMake & Pico SDK<br/>Fuse AI library with C++ logic"]:::actions
+                
+                Compile --> AppBin["app.bin<br/>Executable Firmware"]:::actions
+                
+                %% NEW HARDWARE BENCHMARK GATE ADDED HERE
+                AppBin --> HWGate{"Hardware Benchmark<br/>SRAM < 264KB & Flash < 2MB?"}:::decision
+                HWGate -->|NO| FailHW["Violently Halt Pipeline<br/>Memory Overflow Detected"]:::actions
+                HWGate -->|YES| Release["GitHub Releases<br/>Creates dynamic version tag (v1.22)"]:::github
+            end
+
+            %% PHASE 4
+            subgraph Phase4 ["Phase 4: Hardware Deployment / OTA"]
+                direction TB
+                Boot["Pico W Powers On"]:::pico --> WiFi["Connects to Local Wi-Fi"]:::pico
+                WiFi --> CheckUpdate{"Is there a newer<br/>release available?"}:::decision
+                
+                Release -.->|"Lightweight API Ping:<br/>Compares current version vs. GitHub latest JSON tag"| CheckUpdate
+                
+                CheckUpdate -->|NO| LiveModel["Run Existing Model"]:::pico
+                CheckUpdate -->|YES| DownloadURL["HTTPS GET /latest/download/app.bin"]:::pico
+                
+                Release -.->|"Heavy Download Endpoint"| DownloadURL
+                
+                DownloadURL --> Download["Sequential Chunked Download"]:::pico
+                Download -.-> ABPart["Ideal Implementation: Flash to A/B Partition<br/>Prevents corruption if power fails"]:::future
+                ABPart -.-> Reboot["Hardware Reboot & Swap Partition"]:::pico
+                
+                Download --> Reboot
+                Reboot --> LiveModel
+            end
+
+            %% PHASE 5
+            subgraph Phase5 ["Phase 5: Ideal Continuous Evaluation (Future Scope)"]
+                direction TB
+                LiveModel -.-> Log["Log Inference Confidence Scores<br/>(e.g. Highly Uncertain)"]:::future
+                Log -.-> SendLogs["Transfer Telemetry Logs to Cloud"]:::future
+                SendLogs -.-> MonitorCloud[("Cloud Monitoring Dashboard")]:::future
+                MonitorCloud -.-> DetectDrift{"Is Data Drift /<br/>Performance Decay Detected?"}:::futuredecision
+                DetectDrift -.->|YES| Alert["Alert MLOps Engineer to Collect New Data<br/>& Trigger Retrain"]:::future
+                Alert -.-> Phase1
+            end
+        </div>
+    </div>
+    
+
+    <script>
+        // Security level set to loose to allow standard HTML <br/> tags inside the nodes
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+    </script>
+</body>
+</html>
