@@ -116,7 +116,7 @@
                 Augment --> Train["Train Neural Network<br/>Uses Dropout to prevent memorization"]:::edgeimpulse
                 Train --> Quant["Int8 Quantization<br/>Compresses 32-bit floats to 8-bit ints"]:::edgeimpulse
                 
-                Quant --> Test["test_model.py<br/>Tests tiny model on unseen audio"]:::actions
+                Quant --> Test["test_model.py<br/>Tests tiny model on unseen audio"]:::edgeimpulse
                 Test --> Gate{"Is Accuracy<br/>greater than 80%?"}:::decision
                 
                 Gate -->|NO| Fail["Violently Halt Pipeline<br/>Protect hardware from bad model"]:::actions
